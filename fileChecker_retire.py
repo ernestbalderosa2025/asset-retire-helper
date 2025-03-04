@@ -9,10 +9,11 @@ CORS(app)
 
 
 EXCEL_FILE = "All-Media-links-site-ernest.xlsx"  
-COLUMN_NAME = "ID"  
+ID_COLUMN = "ID"
+URL_COLUMN = "Page URL"
 
-df = pd.read_excel(EXCEL_FILE, usecols=[COLUMN_NAME]) 
-values_set = set(df[COLUMN_NAME].astype(str))
+df = pd.read_excel(EXCEL_FILE, usecols=[ID_COLUMN, URL_COLUMN])
+df[ID_COLUMN] = df[ID_COLUMN].astype(str)
 
 app = Flask(__name__)
 
@@ -38,17 +39,19 @@ def show_popup(text):
 def search():
     data = request.json
     text = data.get("text", "").strip()
+    
+    matching_rows = df[df[ID_COLUMN] == text]
 
     print(f"Received text: {text}")  
 
-    if text:
-        if text in values_set:
+    if not matching_rows.empty:
+            urls = matching_rows[URL_COLUMN].tolist()
             show_popup("Found")
-        else:
-            show_popup("Not Found")
+            return jsonify({"status": "FOUND", "urls": urls})
+    else:
+        show_popup("Not Found")
+        return jsonify({"status": "NOT_FOUND"})
     
-        return jsonify({"status": "done"})
-    return jsonify({"status": "error", "message": "No text provided"}), 400
 
 
 if __name__ == "__main__":

@@ -8,8 +8,6 @@ chrome.runtime.onInstalled.addListener(() => {
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
     if (info.menuItemId === "searchInExcel") {
-        console.log("Selected Text:", info.selectionText);  // Debugging output
-
         fetch("http://127.0.0.1:5000/search", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -17,10 +15,29 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
         })
         .then(response => response.json())
         .then(data => {
-            console.log("Server response:", data);  // Debugging output
+            if (data.status === "FOUND") {
+                const urls = data.urls;
+                console.log("URLs Found:", urls);  
+
+                
+                chrome.tabs.create({ url: urls[0] }, (firstTab) => {
+                    console.log("First tab created:", firstTab);  
+                     chrome.tabs.group({ tabIds: [firstTab.id] }, (groupId) => {
+                        console.log("Group created with ID:", groupId);  // Debugging output
+                        
+                       
+                        for (let i = 1; i < urls.length; i++) {
+                            chrome.tabs.create({ url: urls[i] }, (newTab) => {
+                                console.log("New tab created:", newTab);  
+                                chrome.tabs.group({ groupId: groupId, tabIds: [newTab.id] });
+                            });
+                        }
+                    });
+                });
+            } else {
+                alert("ID not found!");
+            }
         })
-        .catch(error => {
-            console.error("Error:", error);  // If something goes wrong
-        });
+        .catch(error => console.error("Error:", error));
     }
 });
