@@ -30,7 +30,7 @@ This project provides a Chrome extension that allows users to search for IDs in 
     - Click **Open System Shell**
     - Paste the following:
       ```python
-      pip install pandas openpyxl flask pyautogui
+      pip install pandas openpyxl cors flask-cors pyautogui
 
 ## How to use the Chrome Extension
 ### Step 1: Load the Extension into Chrome
